@@ -20,16 +20,25 @@ def register_visualization(account_address, visualization_name, image_hash):
     abi = load_abi(abi_json_file)
     contract = web3.eth.contract(address=contract_address, abi=abi)
     
+    # Check if the hash already exists in the contract
+    is_registered = contract.functions.registerVisualization(
+        account_address,
+        visualization_name,
+        bytes.fromhex(image_hash)
+    )
+    if is_registered:
+        print("Hash already registered. Skipping registration.")
+        return
+    
     nonce = web3.eth.get_transaction_count(account_address)
 
     txn_function = contract.functions.registerVisualization(account_address, visualization_name, bytes.fromhex(image_hash))
-    txn ={
+    txn = txn_function.buildTransaction({
         'chainId': 1,
         'gas': 100000,
-        'gasPrice':1,
+        'gasPrice': 1,
         'nonce': nonce,
-    }
-
+    })
 
     signed_txn = web3.eth.account.sign_transaction(txn, private_key=private_key)
 
@@ -45,7 +54,6 @@ def register_visualization(account_address, visualization_name, image_hash):
         time.sleep(3)  # wait before retrying
 
     print(f'Transaction status: {"Successful" if txn_receipt["status"] == 1 else "Failed"}')
-
 if __name__ == "__main__":
     image_hash = sys.argv[1]
     private_key = "0x4985ebabcf2eb9555f2c557b83dc5c57f51c49ad77d6fcf4ba66a54d4f4b38c9"
