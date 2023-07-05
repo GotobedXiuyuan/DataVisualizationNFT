@@ -20,20 +20,11 @@ def register_visualization(account_address, visualization_name, image_hash):
     abi = load_abi(abi_json_file)
     contract = web3.eth.contract(address=contract_address, abi=abi)
     
-    # Check if the hash already exists in the contract
-    is_registered = contract.functions.registerVisualization(
-        account_address,
-        visualization_name,
-        bytes.fromhex(image_hash)
-    )
-    if is_registered:
-        print("Hash already registered. Skipping registration.")
-        return
     
     nonce = web3.eth.get_transaction_count(account_address)
 
     txn_function = contract.functions.registerVisualization(account_address, visualization_name, bytes.fromhex(image_hash))
-    txn = txn_function.buildTransaction({
+    txn = txn_function.build_transaction({
         'chainId': 1,
         'gas': 100000,
         'gasPrice': 1,
